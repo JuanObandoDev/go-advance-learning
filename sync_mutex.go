@@ -9,14 +9,14 @@ var (
 	balance int = 100
 )
 
-func Deposit(n int, wg *sync.WaitGroup, lock *sync.Mutex) {
+func Deposit(n int, wg *sync.WaitGroup, lock *sync.RWMutex) {
 	defer wg.Done()
 	lock.Lock()
 	balance += n
 	lock.Unlock()
 }
 
-func WithDraw(n int, wg *sync.WaitGroup, lock *sync.Mutex) bool {
+func WithDraw(n int, wg *sync.WaitGroup, lock *sync.RWMutex) bool {
 	defer wg.Done()
 	lock.Lock()
 	if n > balance {
@@ -29,26 +29,28 @@ func WithDraw(n int, wg *sync.WaitGroup, lock *sync.Mutex) bool {
 	return true
 }
 
-func Balance() (b int) {
+func Balance(lock *sync.RWMutex) (b int) {
+	lock.RLock()
 	b = balance
+	lock.RUnlock()
 	return
 }
 
 func main() {
 	var wg sync.WaitGroup
-	var lock sync.Mutex
+	var lock sync.RWMutex
 
 	for i := 1; i <= 5; i++ {
 		wg.Add(1)
 		go Deposit(i*100, &wg, &lock)
 	}
 	wg.Wait()
-	fmt.Println(Balance())
+	fmt.Println(Balance(&lock))
 
 	for i := 0; i <= 5; i++ {
 		wg.Add(1)
 		go WithDraw(i*100, &wg, &lock)
 	}
 	wg.Wait()
-	fmt.Println(Balance())
+	fmt.Println(Balance(&lock))
 }
