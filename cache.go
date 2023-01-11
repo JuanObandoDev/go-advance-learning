@@ -15,6 +15,17 @@ func Fibonacci(n int) int {
 	return Fibonacci(n-1) + Fibonacci(n-2)
 }
 
+// func Fibonacci(n int) int {
+// 	s1 := 0
+// 	s2 := 1
+// 	for i := 1; i < n; i++ {
+// 		s := s1 + s2
+// 		s1 = s2
+// 		s2 = s
+// 	}
+// 	return s2
+// }
+
 type Memory struct {
 	f     Function
 	cache map[int]FunctionResult
@@ -58,7 +69,7 @@ func GetFib(n int) (interface{}, error) {
 func main() {
 	var wg sync.WaitGroup
 	cache := NewCache(GetFib)
-	fibo := []int{10, 20, 30, 40, 40, 30, 20, 10}
+	fibo := []int{10, 20, 30, 40, 50, 60, 70, 80, 90, 100}
 	for _, n := range fibo {
 		wg.Add(1)
 		go func(i int) {
