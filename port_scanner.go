@@ -1,19 +1,32 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"net"
+	"sync"
+)
+
+var (
+	site = flag.String("site", "scanme.nmap.org", "Site to scan")
 )
 
 func main() {
-	for port := 0; port < 100; port++ {
-		conn, err := net.Dial("tcp", fmt.Sprintf("%s:%d", "scanme.nmap.org", port))
+	flag.Parse()
+	var wg sync.WaitGroup
+	for port := 0; port < 65535; port++ {
+		wg.Add(1)
+		go func(port int) {
+			defer wg.Done()
+			conn, err := net.Dial("tcp", fmt.Sprintf("%s:%d", *site, port))
 
-		if err != nil {
-			continue
-		}
+			if err != nil {
+				return
+			}
 
-		conn.Close()
-		fmt.Printf("Port %d is open", port)
+			conn.Close()
+			fmt.Printf("Port %d is open\n", port)
+		}(port)
 	}
+	wg.Wait()
 }
